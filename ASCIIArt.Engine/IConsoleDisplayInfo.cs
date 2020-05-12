@@ -11,6 +11,7 @@ namespace ASCIIArt.Engine
         int WidthInColumns { get; }
         Size ClientAreaSize { get; }
         Size CharPixelSize { get; }
-        IEnumerable<(char, byte[])> PrintableChars { get; }
+        //Use string for rich text
+        IEnumerable<(string, byte[])> PrintableChars { get; }
     }
 }

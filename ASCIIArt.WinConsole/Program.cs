@@ -10,12 +10,12 @@ namespace ASCIIArt.WinConsole
         static void Main(string[] args)
         {
             var info = new ConsoleDisplayInfo();
-            using (var renderEngine = new ImageRenderEngine(info))
+            using (var renderEngine = new ImageRenderEngineCpu(info))
             using (var imgMat = CvInvoke.Imread(args[0]))
             using (var edge = new Mat())
             {
                 CvInvoke.Canny(imgMat, edge, 50, 200);
-                using (var img = edge.ToImage<Rgb, byte>())
+                using (var img = edge.ToImage<Rgba, byte>())
                 {
                     Console.Write(renderEngine.RenderImage(img));
                 }

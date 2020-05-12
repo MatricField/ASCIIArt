@@ -1,16 +1,14 @@
-﻿using Emgu.CV.Cuda;
+﻿using Emgu.CV;
+using Emgu.CV.Cuda;
+using Emgu.CV.CvEnum;
 using System;
+using System.Drawing;
 
 namespace ASCIIArt.Engine.ImageCompare
 {
-    internal sealed class GpuMSSIMBuffer :
+    internal sealed class MSSIMGpuParam :
         IDisposable
     {
-        public GpuMat GI1 { get; set; } = new GpuMat();
-        public GpuMat GI2 { get; set; } = new GpuMat();
-        public GpuMat Gs { get; set; } = new GpuMat();
-        public GpuMat Tmp1 { get; set; } = new GpuMat();
-        public GpuMat Tmp2 { get; set; } = new GpuMat();
         public GpuMat I1_2 { get; set; } = new GpuMat();
         public GpuMat I2_2 { get; set; } = new GpuMat();
         public GpuMat I1_I2 { get; set; } = new GpuMat();
@@ -18,13 +16,31 @@ namespace ASCIIArt.Engine.ImageCompare
         public GpuMat Mu2 { get; set; } = new GpuMat();
         public GpuMat Mu1_2 { get; set; } = new GpuMat();
         public GpuMat Mu2_2 { get; set; } = new GpuMat();
-        public GpuMat Mu1_mu2 { get; set; } = new GpuMat();
+        public GpuMat Mu1_Mu2 { get; set; } = new GpuMat();
         public GpuMat Sigma1_2 { get; set; } = new GpuMat();
         public GpuMat Sigma2_2 { get; set; } = new GpuMat();
         public GpuMat Sigma12 { get; set; } = new GpuMat();
+        public GpuMat T1 { get; set; } = new GpuMat();
+        public GpuMat T2 { get; set; } = new GpuMat();
         public GpuMat T3 { get; set; } = new GpuMat();
-        public GpuMat Ssim_map { get; set; } = new GpuMat();
-        public GpuMat Buf { get; set; } = new GpuMat();
+        public GpuMat SSIM_map { get; set; } = new GpuMat();
+
+        public GpuMat Ones { get; }
+
+        public CudaGaussianFilter GaussianFilter { get; }
+
+        public MSSIMGpuParam(in Size imgPieceSize, DepthType depthType = DepthType.Default, int channels = 4)
+        {
+            GaussianFilter = new CudaGaussianFilter(
+                depthType, channels,
+                depthType, channels,
+                new Size(11, 11), 1.5);
+            Ones = new GpuMat();
+            using(var mat = Mat.Ones(imgPieceSize.Height, imgPieceSize.Width, depthType, channels))
+            {
+                Ones.Upload(mat);
+            }
+        }
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls

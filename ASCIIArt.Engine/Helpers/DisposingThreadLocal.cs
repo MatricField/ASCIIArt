@@ -5,16 +5,16 @@ using System.Threading;
 
 namespace ASCIIArt.Engine.Helpers
 {
-    internal class ValueDisposingThreadLocal<T>
+    internal class DisposingThreadLocal<T>
         : ThreadLocal<T>
         where T : IDisposable
     {
-        public ValueDisposingThreadLocal():
+        public DisposingThreadLocal():
             base(trackAllValues:true)
         {
         }
 
-        public ValueDisposingThreadLocal(Func<T> valueFactory) :
+        public DisposingThreadLocal(Func<T> valueFactory) :
             base(valueFactory, trackAllValues: true)
         {
         }

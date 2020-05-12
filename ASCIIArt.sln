@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASCIIArt.WinConsole", "ASCIIArt.WinConsole\ASCIIArt.WinConsole.csproj", "{0655CBBB-C4A6-49C1-974F-353476F90672}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASCIIArt.Engine", "ASCIIArt.Engine\ASCIIArt.Engine.csproj", "{B23C1B57-9817-4C91-A192-90DCF44C403F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ASCIIArt.Engine", "ASCIIArt.Engine\ASCIIArt.Engine.csproj", "{B23C1B57-9817-4C91-A192-90DCF44C403F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

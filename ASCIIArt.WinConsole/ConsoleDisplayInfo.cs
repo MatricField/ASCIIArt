@@ -24,7 +24,7 @@ namespace ASCIIArt.WinConsole
 
         public Size CharPixelSize { get; private set; }
 
-        public IEnumerable<(char, byte[])> PrintableChars { get; private set; }
+        public IEnumerable<(string, byte[])> PrintableChars { get; private set; }
 
         public ConsoleDisplayInfo()
         {
@@ -44,7 +44,7 @@ namespace ASCIIArt.WinConsole
             PrintableChars = GetAvailableCharBitmaps();
         }
 
-        private List<(char, byte[])> GetAvailableCharBitmaps()
+        private List<(string, byte[])> GetAvailableCharBitmaps()
         {
             var printable = GetPrintableChars();
             Console.Clear();
@@ -58,7 +58,7 @@ namespace ASCIIArt.WinConsole
             using (var bitmap = CaptureScreen(currentWindow))
             {
                 Console.Clear();
-                var result = new List<(char, byte[])>();
+                var result = new List<(string, byte[])>();
                 var i = 0;
                 foreach (var c in printable)
                 {
@@ -72,7 +72,7 @@ namespace ASCIIArt.WinConsole
                     stream.Seek(0, SeekOrigin.Begin);
                     stream.SetLength(0);
                     piece.Save(stream, ImageFormat.Png);
-                    result.Add((c, stream.ToArray()));
+                    result.Add((c.ToString(), stream.ToArray()));
                     i++;
                 }
                 return result;
