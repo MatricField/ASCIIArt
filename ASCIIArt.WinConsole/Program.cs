@@ -7,7 +7,6 @@ namespace ASCIIArt.WinConsole
 {
     class Program
     {
-        static readonly string DESKTOP = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
         static void Main(string[] args)
         {
             var info = new ConsoleDisplayInfo();
