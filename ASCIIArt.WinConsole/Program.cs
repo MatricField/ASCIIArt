@@ -3,6 +3,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System;
+using System.Drawing.Text;
 
 namespace ASCIIArt.WinConsole
 {
@@ -10,6 +11,7 @@ namespace ASCIIArt.WinConsole
     {
         static void Main(string[] args)
         {
+            var col = new InstalledFontCollection();
             var info = new ConsoleDisplayInfo();
             using (var imgMat = CvInvoke.Imread(args[0], ImreadModes.ReducedColor2))
             using (var edge = new Mat())
