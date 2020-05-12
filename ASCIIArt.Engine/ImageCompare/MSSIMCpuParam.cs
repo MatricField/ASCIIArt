@@ -5,7 +5,7 @@ using System.Drawing;
 
 namespace ASCIIArt.Engine.ImageCompare
 {
-    internal sealed class MSSIMCpuParam :
+    public sealed class MSSIMCpuParam :
         IDisposable
     {
         public Mat I1 { get; set; } = new Mat();

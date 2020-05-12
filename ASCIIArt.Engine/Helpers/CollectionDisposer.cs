@@ -4,17 +4,14 @@ using System.Text;
 
 namespace ASCIIArt.Engine.Helpers
 {
-    internal class CollectionDisposer<T>:
+    internal class CollectionDisposer:
         IDisposable
     {
+        private Func<IEnumerable<IDisposable>> selectDisposeElm;
 
-        private IEnumerable<T> collection;
-        private Func<T, IEnumerable<IDisposable>> selectDisposeElm;
-
-        public CollectionDisposer(IEnumerable<T> collection, Func<T, IEnumerable<IDisposable>> disposeElmSelector)
+        public CollectionDisposer(Func<IEnumerable<IDisposable>> disposeElmSelector)
         {
-            this.collection = collection;
-            this.selectDisposeElm = disposeElmSelector;
+            selectDisposeElm = disposeElmSelector;
         }
 
         #region IDisposable Support
@@ -26,12 +23,9 @@ namespace ASCIIArt.Engine.Helpers
             {
                 if (disposing)
                 {
-                    foreach(var v in collection)
+                    foreach(var elm in selectDisposeElm())
                     {
-                        foreach(var elm in selectDisposeElm(v))
-                        {
-                            elm.Dispose();
-                        }
+                        elm.Dispose();
                     }
                 }
 
@@ -46,25 +40,5 @@ namespace ASCIIArt.Engine.Helpers
             Dispose(true);
         }
         #endregion
-    }
-
-    internal static class CollectionDisposer
-    {
-        public static CollectionDisposer<T> Create<T>(IEnumerable<T> collection, Func<T, IEnumerable<IDisposable>> disposeElmSelector)
-        {
-            return new CollectionDisposer<T>(collection, disposeElmSelector);
-        }
-
-        public static CollectionDisposer<T> Create<T>(IEnumerable<T> collection)
-            where T : IDisposable
-        {
-            return new CollectionDisposer<T>(collection, id);
-        }
-
-        private static IEnumerable<IDisposable> id<T>(T e)
-            where T : IDisposable
-        {
-            yield return e;
-        }
     }
 }

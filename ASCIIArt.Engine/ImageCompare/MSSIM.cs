@@ -22,6 +22,7 @@ namespace ASCIIArt.Engine.ImageCompare
         {
             try
             {
+                var gaussianSize = new Size(3, 3);
                 i1.ConvertTo(b.I1, b.DepthType);
                 i2.ConvertTo(b.I2, b.DepthType);
 
@@ -29,16 +30,16 @@ namespace ASCIIArt.Engine.ImageCompare
                 CvInvoke.Multiply(b.I2, b.I2, b.I2_2);
                 CvInvoke.Multiply(b.I1, b.I2, b.I1_I2);
 
-                CvInvoke.GaussianBlur(b.I1, b.Mu1, new Size(11, 11), 1.5);
-                CvInvoke.GaussianBlur(b.I2, b.Mu2, new Size(11, 11), 1.5);
+                CvInvoke.GaussianBlur(b.I1, b.Mu1, gaussianSize, 1.5);
+                CvInvoke.GaussianBlur(b.I2, b.Mu2, gaussianSize, 1.5);
 
                 CvInvoke.Multiply(b.Mu1, b.Mu1, b.Mu1_2);
                 CvInvoke.Multiply(b.Mu2, b.Mu2, b.Mu2_2);
                 CvInvoke.Multiply(b.Mu1, b.Mu2, b.Mu1_Mu2);
 
-                CvInvoke.GaussianBlur(b.I1_2, b.Sigma1_2, new Size(11, 11), 1.5);
-                CvInvoke.GaussianBlur(b.I2_2, b.Sigma2_2, new Size(11, 11), 1.5);
-                CvInvoke.GaussianBlur(b.I1_I2, b.Sigma12, new Size(11, 11), 1.5);
+                CvInvoke.GaussianBlur(b.I1_2, b.Sigma1_2, gaussianSize, 1.5);
+                CvInvoke.GaussianBlur(b.I2_2, b.Sigma2_2, gaussianSize, 1.5);
+                CvInvoke.GaussianBlur(b.I1_I2, b.Sigma12, gaussianSize, 1.5);
 
                 //sigma1_2 = sigma1_2 - mu1_2
                 CvInvoke.AddWeighted(b.Sigma1_2, 1, b.Mu1_2, -1, 0, b.Sigma1_2);
