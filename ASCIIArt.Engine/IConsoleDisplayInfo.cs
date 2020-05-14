@@ -11,5 +11,6 @@ namespace ASCIIArt.Engine
         Size CharPixelSize { get; }
         //Use string for rich text
         IReadOnlyDictionary<string, byte[]> PrintableChars { get; }
+        void SetConsoleSize(int width, int height);
     }
 }

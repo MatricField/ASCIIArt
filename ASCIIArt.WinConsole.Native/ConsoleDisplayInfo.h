@@ -7,57 +7,61 @@ using namespace System::Drawing;
 using namespace System::Runtime::InteropServices;
 using namespace ATL;
 
-namespace ASCIIArtWinConsoleNative {
-    public ref class ConsoleDisplayInfo :
-        public IConsoleDisplayInfo
+namespace ASCIIArtWinConsole {
+    namespace Native
     {
-        Size _CharPixelSize;
-        Lazy<IReadOnlyDictionary<String^, array<byte>^>^>^ _PrintableChars;
-        CONSOLE_FONT_INFOEX* fontInfo;
-    public:
-        property int HeightInRows
+        public ref class ConsoleDisplayInfo :
+            public IConsoleDisplayInfo
         {
-            virtual int get();
-        }
+            Size _CharPixelSize;
+            Lazy<IReadOnlyDictionary<String^, array<byte>^>^>^ _PrintableChars;
+            CONSOLE_FONT_INFOEX* fontInfo;
+        public:
+            property int HeightInRows
+            {
+                virtual int get();
+            }
 
-        property int WidthInColumns
-        {
-            virtual int get();
-        }
+            property int WidthInColumns
+            {
+                virtual int get();
+            }
 
-        property Size ClientAreaSize
-        {
-            virtual Size get();
-        }
+            property Size ClientAreaSize
+            {
+                virtual Size get();
+            }
 
-        property Size CharPixelSize
-        {
-            virtual Size get();
-        }
+            property Size CharPixelSize
+            {
+                virtual Size get();
+            }
 
-        property IReadOnlyDictionary<String^, array<byte>^>^ PrintableChars
-        {
-            virtual IReadOnlyDictionary<String^, array<byte>^>^ get();
-        }
+            property IReadOnlyDictionary<String^, array<byte>^>^ PrintableChars
+            {
+                virtual IReadOnlyDictionary<String^, array<byte>^>^ get();
+            }
 
-        ConsoleDisplayInfo();
+            ConsoleDisplayInfo();
 
-        virtual ~ConsoleDisplayInfo();
+            virtual void SetConsoleSize(int width, int height);
 
-        !ConsoleDisplayInfo();
+            virtual ~ConsoleDisplayInfo();
 
-    protected:
-        virtual void Initialize();
+            !ConsoleDisplayInfo();
 
-        virtual IReadOnlyDictionary<String^, array<byte>^>^ GetAvailableCharBitmaps();
+        protected:
+            virtual void Initialize();
 
-    private:
-        
+            virtual IReadOnlyDictionary<String^, array<byte>^>^ GetAvailableCharBitmaps();
 
-        array<Char>^ GetPrintableChars();
+        private:
+            IList<Char>^ GetPrintableChars();
 
-        IEnumerable<char>^ GetConsoleFontUnicodeRage();
+            static Bitmap^ CaptureScreen(HWND hWindow);
 
-        static void ThrowIfNotSuccess(HRESULT hr);
-    };
+            static void Check(HRESULT hr);
+        };
+    }
+
 }
