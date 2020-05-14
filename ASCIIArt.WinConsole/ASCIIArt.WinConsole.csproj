@@ -60,6 +60,8 @@
     <Compile Include="ConsoleDisplayInfo.cs" />
     <Compile Include="Native\CONSOLE_FONT_INFOEX.cs" />
     <Compile Include="Native\COORD.cs" />
+    <Compile Include="Native\FontRange.cs" />
+    <Compile Include="Native\GDI32.cs" />
     <Compile Include="Native\Kernel32.cs" />
     <Compile Include="Native\POINT.cs" />
     <Compile Include="Native\RECT.cs" />
