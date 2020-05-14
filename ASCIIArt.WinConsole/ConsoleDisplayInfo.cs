@@ -15,16 +15,12 @@ namespace ASCIIArt.WinConsole
         public int WidthInColumns => Console.WindowWidth;
         public int HeightInRows => Console.WindowHeight;
 
-        public int CharPixelWidth => CharPixelSize.Width;
-
-        public int CharPixelHeight => CharPixelSize.Height;
-
         public Size ClientAreaSize =>
-            new Size(WidthInColumns * CharPixelWidth, HeightInRows * CharPixelHeight);
+            new Size(WidthInColumns * CharPixelSize.Width, HeightInRows * CharPixelSize.Height);
 
         public Size CharPixelSize { get; private set; }
 
-        public IEnumerable<(string, byte[])> PrintableChars { get; private set; }
+        public IReadOnlyDictionary<string, byte[]> PrintableChars { get; private set; }
 
         public ConsoleDisplayInfo()
         {
@@ -44,7 +40,7 @@ namespace ASCIIArt.WinConsole
             PrintableChars = GetAvailableCharBitmaps();
         }
 
-        private List<(string, byte[])> GetAvailableCharBitmaps()
+        private Dictionary<string, byte[]> GetAvailableCharBitmaps()
         {
             var printable = GetPrintableChars();
             Console.Clear();
@@ -58,21 +54,21 @@ namespace ASCIIArt.WinConsole
             using (var bitmap = CaptureScreen(currentWindow))
             {
                 Console.Clear();
-                var result = new List<(string, byte[])>();
+                var result = new Dictionary<string, byte[]>();
                 var i = 0;
                 foreach (var c in printable)
                 {
                     var loc = new Point()
                     {
-                        X = i % WidthInColumns * CharPixelWidth,
-                        Y = i / WidthInColumns * CharPixelHeight,
+                        X = i % WidthInColumns * CharPixelSize.Width,
+                        Y = i / WidthInColumns * CharPixelSize.Height,
                     };
                     var charRect = new Rectangle(loc, CharPixelSize);
                     var piece = bitmap.Clone(charRect, bitmap.PixelFormat);
                     stream.Seek(0, SeekOrigin.Begin);
                     stream.SetLength(0);
                     piece.Save(stream, ImageFormat.Png);
-                    result.Add((c.ToString(), stream.ToArray()));
+                    result.Add(c.ToString(), stream.ToArray());
                     i++;
                 }
                 return result;

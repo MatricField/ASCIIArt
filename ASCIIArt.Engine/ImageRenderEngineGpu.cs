@@ -23,8 +23,10 @@ namespace ASCIIArt.Engine
             using (var tmp = new GpuMat())
             using (var mat = new Mat())
             {
-                foreach (var (c, data) in consoleDisplayInfo.PrintableChars)
+                foreach (var kvp in consoleDisplayInfo.PrintableChars)
                 {
+                    var c = kvp.Key;
+                    var data = kvp.Value;
                     CvInvoke.Imdecode(data, ImreadModes.Grayscale, mat);
                     tmp.Upload(mat);
                     var gMat = new GpuMat();
@@ -59,8 +61,8 @@ namespace ASCIIArt.Engine
                 void ComparePiece((int, int) i)
                 {
                     var (y, x) = i;
-                    var rowRange = new Range(y * info.CharPixelHeight, (y + 1) * info.CharPixelHeight);
-                    var colRange = new Range(x * info.CharPixelWidth, (x + 1) * info.CharPixelWidth);
+                    var rowRange = new Range(y * info.CharPixelSize.Height, (y + 1) * info.CharPixelSize.Height);
+                    var colRange = new Range(x * info.CharPixelSize.Width, (x + 1) * info.CharPixelSize.Width);
                     using (var piece = new GpuMat(gImgMat, rowRange, colRange))
                     {
                         var c =

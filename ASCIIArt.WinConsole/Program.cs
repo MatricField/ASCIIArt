@@ -16,7 +16,7 @@ namespace ASCIIArt.WinConsole
             using (var imgMat = CvInvoke.Imread(args[0], ImreadModes.ReducedColor2))
             using (var edge = new Mat())
             {
-                Console.SetWindowSize(imgMat.Width / info.CharPixelWidth, imgMat.Height / info.CharPixelHeight);
+                Console.SetWindowSize(imgMat.Width / info.CharPixelSize.Width, imgMat.Height / info.CharPixelSize.Height);
                 info = new ConsoleDisplayInfo();
                 using (var renderEngine = new ImageRenderEngineCpu(info, channels:1))
                 {

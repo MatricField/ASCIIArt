@@ -35,9 +35,10 @@ namespace ASCIIArt.Engine
                 () => new MSSIMCpuParam(consoleDisplayInfo.CharPixelSize, depthType, channels: channels));
             Depth = depthType;
 
-            (string, Mat) ConvertCharMat((string, byte[]) pair)
+            (string, Mat) ConvertCharMat(KeyValuePair<string, byte[]> pair)
             {
-                var (c, b) = pair;
+                var c = pair.Key;
+                var b = pair.Value;
                 var charMat = new Mat();
                 using (var tmp = new Mat(0, 0, Depth, 4))
                 {
@@ -123,8 +124,8 @@ namespace ASCIIArt.Engine
                     var (y, x) = i;
                     var loc = new Point()
                     {
-                        X = x * info.CharPixelWidth,
-                        Y = y * info.CharPixelHeight
+                        X = x * info.CharPixelSize.Width,
+                        Y = y * info.CharPixelSize.Height
                     };
                     var rect = new Rectangle(loc, info.CharPixelSize);
                     using (var piece = new Mat(imgMat, rect))

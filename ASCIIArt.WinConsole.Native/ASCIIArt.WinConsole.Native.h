@@ -1,53 +1,56 @@
 #pragma once
 
-#include <dwrite.h>
-#include <atlcomcli.h>
-#include <comdef.h>
-
+using namespace ASCIIArt::Engine;
 using namespace System;
+using namespace System::Collections::Generic;
+using namespace System::Drawing;
 using namespace System::Runtime::InteropServices;
 using namespace ATL;
 
 namespace ASCIIArtWinConsoleNative {
-    public ref class ConsoleDisplayInfo
+    public ref class ConsoleDisplayInfo :
+        public IConsoleDisplayInfo
     {
+        Size _CharPixelSize;
+        IReadOnlyDictionary<String^, array<byte>^>^ _PrintableChars;
+    public:
+        property int HeightInRows
+        {
+            virtual int get();
+        }
+
+        property int WidthInColumns
+        {
+            virtual int get();
+        }
+
+        property Size ClientAreaSize
+        {
+            virtual Size get();
+        }
+
+        property Size CharPixelSize
+        {
+            virtual Size get();
+        }
+
+        property IReadOnlyDictionary<String^, array<byte>^>^ PrintableChars
+        {
+            virtual IReadOnlyDictionary<String^, array<byte>^>^ get();
+        }
+
+        ConsoleDisplayInfo();
+
+    protected:
+        virtual void Initialize();
+
     private:
-        array<char>^ GetConsoleFontUnicodeRage()
-        {
-            CoInitialize(nullptr);
-            try
-            {
-                CComPtr<IDWriteFactory> factory;
-                ThrowIfNotSuccess(
-                    DWriteCreateFactory(
-                        DWRITE_FACTORY_TYPE_SHARED,
-                        __uuidof(IDWriteFactory),
-                        (IUnknown**)(&factory))
-                );
+        Dictionary<String^, array<byte>^>^ GetAvailableCharBitmaps();
 
-                CComPtr<IDWriteFontCollection> fontCollection;
+        static array<Char>^ GetPrintableChars();
 
-                ThrowIfNotSuccess(
-                    factory->GetSystemFontCollection(&fontCollection)
-                );
+        static IEnumerable<char>^ GetConsoleFontUnicodeRage(const CONSOLE_FONT_INFOEX& info);
 
-                CComPtr<IDWriteFontFamily> fam;
-                ThrowIfNotSuccess(
-                    fontCollection->GetFontFamily(0, &fam)
-                );
-            }
-            finally
-            {
-                CoUninitialize();
-                throw;
-            }
-        }
-        static void ThrowIfNotSuccess(HRESULT hr)
-        {
-            if (!SUCCEEDED(hr))
-            {
-                Marshal::ThrowExceptionForHR(hr);
-            }
-        }
+        static void ThrowIfNotSuccess(HRESULT hr);
     };
 }
