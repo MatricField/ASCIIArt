@@ -1,30 +1,47 @@
 #include "pch.h"
 
 #include <dwrite.h>
-#include "ASCIIArt.WinConsole.Native.h"
+#include "ConsoleDisplayInfo.h"
 
-ASCIIArtWinConsoleNative::ConsoleDisplayInfo::ConsoleDisplayInfo()
+ASCIIArtWinConsoleNative::ConsoleDisplayInfo::ConsoleDisplayInfo():
+    fontInfo(new CONSOLE_FONT_INFOEX)
 {
     // Lock Console
     auto hWindow { GetForegroundWindow() };
     auto style { GetWindowLong(hWindow, GWL_STYLE) };
     style &= ~WS_SIZEBOX;
     SetWindowLong(hWindow, GWL_STYLE, style);
+    _PrintableChars = gcnew Lazy<IReadOnlyDictionary<String^, array<byte>^>^>(
+        gcnew Func<IReadOnlyDictionary<String^, array<byte>^>^>(this, &GetAvailableCharBitmaps)
+        );
     Initialize();
+}
+
+ASCIIArtWinConsoleNative::ConsoleDisplayInfo::~ConsoleDisplayInfo()
+{
+    this->!ConsoleDisplayInfo();
+}
+
+ASCIIArtWinConsoleNative::ConsoleDisplayInfo::!ConsoleDisplayInfo()
+{
+    delete fontInfo;
+    fontInfo = nullptr;
 }
 
 void ASCIIArtWinConsoleNative::ConsoleDisplayInfo::Initialize()
 {
     auto hStdOut { GetStdHandle(STD_OUTPUT_HANDLE) };
-    CONSOLE_FONT_INFOEX fontInfo = { sizeof(CONSOLE_FONT_INFOEX) };
-    GetCurrentConsoleFontEx(hStdOut, FALSE, &fontInfo);
-    _CharPixelSize = Size(fontInfo.dwFontSize.X, fontInfo.dwFontSize.Y);
-    _PrintableChars = GetAvailableCharBitmaps();
+    GetCurrentConsoleFontEx(hStdOut, FALSE, fontInfo);
+    _CharPixelSize = Size(fontInfo->dwFontSize.X, fontInfo->dwFontSize.Y);
 }
 
-Dictionary<String^, array<byte>^>^ ASCIIArtWinConsoleNative::ConsoleDisplayInfo::GetAvailableCharBitmaps()
+IReadOnlyDictionary<String^, array<byte>^>^ ASCIIArtWinConsoleNative::ConsoleDisplayInfo::GetAvailableCharBitmaps()
 {
-    auto printable = GetPrintableChars();
+    using namespace System::IO;
+    auto printable{ GetPrintableChars() };
+    auto result{ gcnew Dictionary<String^, array<byte>^>() };
+    auto currentWindow{ GetConsoleWindow() };
+    auto stream{ gcnew MemoryStream() };
 
 }
 
@@ -34,7 +51,7 @@ array<Char>^ ASCIIArtWinConsoleNative::ConsoleDisplayInfo::GetPrintableChars()
     // TODO: insert return statement here
 }
 
-IEnumerable<char>^ ASCIIArtWinConsoleNative::ConsoleDisplayInfo::GetConsoleFontUnicodeRage(const CONSOLE_FONT_INFOEX& info)
+IEnumerable<char>^ ASCIIArtWinConsoleNative::ConsoleDisplayInfo::GetConsoleFontUnicodeRage()
 {
     CoInitialize(nullptr);
     try
@@ -55,7 +72,7 @@ IEnumerable<char>^ ASCIIArtWinConsoleNative::ConsoleDisplayInfo::GetConsoleFontU
 
         CComPtr<IDWriteFontFamily> fam;
         ThrowIfNotSuccess(
-            fontCollection->GetFontFamily(info.nFont, &fam)
+            fontCollection->GetFontFamily(fontInfo -> nFont, &fam)
         );
     }
     finally
@@ -95,5 +112,5 @@ Size ASCIIArtWinConsoleNative::ConsoleDisplayInfo::CharPixelSize::get()
 
 IReadOnlyDictionary<String^, array<byte>^>^ ASCIIArtWinConsoleNative::ConsoleDisplayInfo::PrintableChars::get()
 {
-    return this->_PrintableChars;
+    return this->_PrintableChars->Value;
 }

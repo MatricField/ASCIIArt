@@ -12,7 +12,8 @@ namespace ASCIIArtWinConsoleNative {
         public IConsoleDisplayInfo
     {
         Size _CharPixelSize;
-        IReadOnlyDictionary<String^, array<byte>^>^ _PrintableChars;
+        Lazy<IReadOnlyDictionary<String^, array<byte>^>^>^ _PrintableChars;
+        CONSOLE_FONT_INFOEX* fontInfo;
     public:
         property int HeightInRows
         {
@@ -41,15 +42,21 @@ namespace ASCIIArtWinConsoleNative {
 
         ConsoleDisplayInfo();
 
+        virtual ~ConsoleDisplayInfo();
+
+        !ConsoleDisplayInfo();
+
     protected:
         virtual void Initialize();
 
+        virtual IReadOnlyDictionary<String^, array<byte>^>^ GetAvailableCharBitmaps();
+
     private:
-        Dictionary<String^, array<byte>^>^ GetAvailableCharBitmaps();
+        
 
-        static array<Char>^ GetPrintableChars();
+        array<Char>^ GetPrintableChars();
 
-        static IEnumerable<char>^ GetConsoleFontUnicodeRage(const CONSOLE_FONT_INFOEX& info);
+        IEnumerable<char>^ GetConsoleFontUnicodeRage();
 
         static void ThrowIfNotSuccess(HRESULT hr);
     };
