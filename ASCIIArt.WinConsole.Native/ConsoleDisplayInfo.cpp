@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#include <memory>
 #include <dwrite_1.h>
 #include <vector>
 #include "ConsoleDisplayInfo.h"
@@ -48,6 +49,7 @@ IReadOnlyDictionary<String^, array<byte>^>^ ASCIIArtWinConsole::Native::ConsoleD
     using namespace System::Threading;
     using namespace System::Drawing;
     using namespace System::Drawing::Imaging;
+    using namespace System::Collections::Generic;
 
     auto printable = GetPrintableChars();
     auto result{ gcnew Dictionary<String^, array<byte>^>() };
@@ -55,31 +57,129 @@ IReadOnlyDictionary<String^, array<byte>^>^ ASCIIArtWinConsole::Native::ConsoleD
     auto stream{ gcnew MemoryStream() };
     auto chunkSize{ WidthInColumns * HeightInRows };
 
-    for (decltype(chunkSize) begin; begin < printable->Count; begin += chunkSize)
+    auto buffer{ gcnew List<Tuple<Char, Point>^>() };
+    auto e = printable->GetEnumerator();
+    bool next = true;
+    for (decltype(chunkSize) begin; next; begin += chunkSize)
     {
         Console::Clear();
-        for (decltype(begin) i = 0; i < begin + chunkSize; i++)
+        buffer->Clear();
+        for (decltype(begin) i = 0; i < begin + chunkSize && (next = e->MoveNext()); i++)
         {
-            Console::Write(printable[i]);
+            Point loc(i % WidthInColumns * CharPixelSize.Width, i / WidthInColumns * CharPixelSize.Height);
+            auto c = e->Current;
+            Console::Write(c);
+            buffer->Add(gcnew Tuple<Char, Point>(c, loc));
         }
         Thread::Sleep(300);
         auto bitmap{ CaptureScreen(currentWindow) };
-        for (decltype(begin) i = 0; i < begin + chunkSize; i++)
-        {
-            Point loc(i % WidthInColumns * CharPixelSize.Width, i / WidthInColumns * CharPixelSize.Height);
+        for each(auto pair in buffer)
+        {      
+            auto c = pair->Item1;
+            auto loc = pair->Item2;
             System::Drawing::Rectangle charRect(loc, CharPixelSize);
             auto piece = bitmap->Clone(charRect, bitmap->PixelFormat);
             stream->Seek(0, SeekOrigin::Begin);
             stream->SetLength(0);
             piece->Save(stream, ImageFormat::Png);
-            result->Add(printable[i].ToString(), stream->ToArray());
+            result->Add(c.ToString(), stream->ToArray());
         }
     }
     Console::Clear();
     return result;
 }
 
-IList<Char>^ ASCIIArtWinConsole::Native::ConsoleDisplayInfo::GetPrintableChars()
+[StructLayout(LayoutKind::Sequential)]
+value struct Range
+{
+    UINT32 first;
+    UINT32 last;
+};
+
+ref class UnicodeRangeEmrt :
+    public IEnumerator<Char>, public IDisposable
+{
+    IList<Range>^ ranges;
+    Char _Current;
+    std::size_t iRange;
+public:
+    explicit UnicodeRangeEmrt(IList<Range>^ ranges):
+        ranges(ranges), _Current(), iRange()
+    {
+
+    }
+    ~UnicodeRangeEmrt()
+    {
+
+    }
+
+    virtual bool MoveNext()
+    {
+        if (iRange == ranges->Count)
+        {
+            return false;
+        }
+        if (_Current++ < ranges[iRange].last)
+        {
+            return true;
+        }
+        else if (iRange++ < ranges->Count)
+        {
+            _Current = ranges[iRange].first;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    virtual void Reset()
+    {
+        throw gcnew NotSupportedException();
+    }
+    virtual property Char Current
+    {
+        Char get()
+        {
+            return _Current;
+        }
+    }
+
+protected:
+    virtual property System::Object^ NonGenericCurrent
+    {
+        System::Object^ get() = System::Collections::IEnumerator::Current::get
+        {
+            return Current;
+        }
+    }
+};
+
+ref class UnicodeRangeEmrb :
+    public IEnumerable<Char>
+{
+    IList<Range>^ ranges;
+public:
+    explicit UnicodeRangeEmrb(IList<Range>^ ranges) :
+        ranges(ranges)
+    {
+
+    }
+
+    virtual System::Collections::Generic::IEnumerator<wchar_t>^ GetEnumerator()
+    {
+        return gcnew UnicodeRangeEmrt(ranges);
+    }
+
+protected:
+    virtual System::Collections::IEnumerator^ NonGenericGetEnumerator() =
+        System::Collections::IEnumerable::GetEnumerator
+    {
+        return gcnew UnicodeRangeEmrt(ranges);
+    }
+};
+
+IEnumerable<Char>^ ASCIIArtWinConsole::Native::ConsoleDisplayInfo::GetPrintableChars()
 {
     CoInitialize(nullptr);
     try
@@ -120,15 +220,14 @@ IList<Char>^ ASCIIArtWinConsole::Native::ConsoleDisplayInfo::GetPrintableChars()
         std::vector<DWRITE_UNICODE_RANGE> ranges(rangeCount);
         hr = font->GetUnicodeRanges(ranges.size(), ranges.data(), &rangeCount);
         Check(hr);
-        auto printable{gcnew List<Char>()};
-        for (const auto& range : ranges)
+
+        auto rangeBuffer{ gcnew List<Range>(ranges.size()) };        
+        for (auto& r : ranges)
         {
-            for (Char i = range.first; i != range.last; ++i)
-            {
-                printable->Add(i);
-            }
+            auto p = IntPtr(&r);
+            rangeBuffer->Add(Marshal::PtrToStructure<Range>(p));
         }
-        return printable;
+        return gcnew UnicodeRangeEmrb(rangeBuffer);
     }
     finally
     {

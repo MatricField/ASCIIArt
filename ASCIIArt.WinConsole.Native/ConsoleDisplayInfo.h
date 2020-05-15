@@ -56,7 +56,7 @@ namespace ASCIIArtWinConsole {
             virtual IReadOnlyDictionary<String^, array<byte>^>^ GetAvailableCharBitmaps();
 
         private:
-            IList<Char>^ GetPrintableChars();
+            IEnumerable<Char>^ GetPrintableChars();
 
             static Bitmap^ CaptureScreen(HWND hWindow);
 
